@@ -7,7 +7,7 @@ import { success } from "zod";
 
 
 export async function POST(request: Request) {
-    const body = await request.json();
+    try {const body = await request.json();
     const validation = registerSchema.safeParse(body);
     if(!validation.success){
         return NextResponse.json(
@@ -59,5 +59,18 @@ export async function POST(request: Request) {
         status: 201
     }
 );
+
+}catch (error){
+    console.error(error);
+    return NextResponse.json(
+        {
+            success: false,
+            message: "Internal Server Error",
+        },
+        {
+            status: 500
+        }
+    );
+}
     
 }
