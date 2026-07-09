@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { generateToken } from "@/lib/jwt";
 
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
@@ -52,8 +53,12 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+    const token = generateToken(
+      user._id.toString(),
+      user.email
+    );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: "Login Successful",
       user: {
@@ -62,6 +67,16 @@ export async function POST(request: Request) {
         email: user.email,
       },
     });
+
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return response;
 
   } catch (error) {
 
